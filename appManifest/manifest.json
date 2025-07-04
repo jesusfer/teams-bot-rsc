@@ -1,0 +1,95 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.19",
+  "version": "1.2.2",
+  "id": "df55b910-087a-43db-8744-b79fed4b4967",
+  "developer": {
+    "name": "teamsConversationBot",
+    "websiteUrl": "https://www.microsoft.com",
+    "privacyUrl": "https://www.teams.com/privacy",
+    "termsOfUseUrl": "https://www.teams.com/termsofuser"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "name": {
+    "short": "RSC_Bot_1",
+    "full": "RSC_Bot_1"
+  },
+  "description": {
+    "short": "Demo bot for Teams showing conversation events with adaptive card support.",
+    "full": "This sample app showcases Teams bot conversation events and adaptive cards."
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [
+    {
+      "botId": "df55b910-087a-43db-8744-b79fed4b4967",
+      "scopes": [
+        "personal",
+        "groupChat",
+        "team"
+      ],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false,
+      "commandLists": [
+        {
+          "scopes": [
+            "personal",
+            "groupChat",
+            "team"
+          ],
+          "commands": [
+            {
+              "title": "MentionMe",
+              "description": "Sends message with @mention of the sender"
+            },
+            {
+              "title": "Show Welcome",
+              "description": "Shows the welcome card"
+            },
+            {
+              "title": "MessageAllMembers",
+              "description": "Send 1 to 1 message to all members of the current conversation"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "webApplicationInfo": {
+    "id": "df55b910-087a-43db-8744-b79fed4b4967",
+    "resource": "6hbjrmgz-3978.euw.devtunnels.ms"
+  },
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "6hbjrmgz-3978.euw.devtunnels.ms"
+  ],
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        {
+          "name": "Chat.Manage.Chat",
+          "type": "Application"
+        },
+        {
+          "name": "ChatMessage.Read.Chat",
+          "type": "Application"
+        },
+        {
+          "name": "ChatMember.Read.Chat",
+          "type": "Application"
+        },
+        {
+          "name": "TeamsAppInstallation.Read.Chat",
+          "type": "Application"
+        }
+      ]
+    }
+  }
+}
