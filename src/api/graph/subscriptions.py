@@ -1,5 +1,5 @@
 """
-This module handles Microsoft Graph webhook subscriptions for chat messages.
+API endpoints to handle Microsoft Graph webhook subscriptions for chat messages.
 """
 
 import functools

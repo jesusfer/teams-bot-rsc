@@ -28,6 +28,10 @@ https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/resource
 https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/grant-resource-specific-consent
 https://learn.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
 
+https://learn.microsoft.com/en-us/graph/change-notifications-lifecycle-events
+https://learn.microsoft.com/en-us/graph/teams-changenotifications-chatmessage#subscribe-to-messages-in-a-chat
+https://learn.microsoft.com/en-us/graph/api/chat-post-installedapps?view=graph-rest-1.0&tabs=python
+
 """
 
 
@@ -45,7 +49,7 @@ class Graph:
         self.client_credential = ClientSecretCredential(
             tenant_id, client_id, client_secret
         )
-        self.app_client = GraphServiceClient(self.client_credential)  # type: ignore
+        self.app_client = GraphServiceClient(self.client_credential)
 
     async def get_app_only_token(self):
         graph_scope = "https://graph.microsoft.com/.default"
@@ -161,7 +165,6 @@ class Graph:
         subscription_id: str,
         expiration_in_seconds: int = CONFIG.GRAPH_NOTIFICATION_EXPIRATION,
     ) -> Subscription | None:
-        # https://learn.microsoft.com/en-us/graph/change-notifications-lifecycle-events
         subscription = await self.app_client.subscriptions.by_subscription_id(
             subscription_id
         ).get()
@@ -186,7 +189,6 @@ class Graph:
             print(f"Graph: No subscription found with ID: {subscription_id}")
 
     async def create_chat_messages_subscription(self, chat_id: str):
-        # https://learn.microsoft.com/en-us/graph/teams-changenotifications-chatmessage#subscribe-to-messages-in-a-chat
         resource = f"/chats/{chat_id}/messages"
         change_type = "created"
         return await self.create_subscription(resource, change_type)
@@ -208,11 +210,10 @@ class Graph:
 
     async def add_bot_to_chat(self, chat_id: str) -> None:
         """Add a bot to a chat that requests resource specific permissions."""
-        # https://learn.microsoft.com/en-us/graph/api/chat-post-installedapps?view=graph-rest-1.0&tabs=python
         # Works with RSC Chat.Manage.Chat permission and Graph's TeamsAppInstallation.ManageSelectedForChat.All.
         # Not sure how to select which apps can be managed.
-        # Copilot suggests that the managing app should be the one in the webApplicationInfo in the manifest,
-        # but that'd break SSO in the managed app if it were true.
+        # Copilot suggests that the managing app should be the one in the webApplicationInfo in the
+        # managed app manifest, but that'd break SSO in the managed app if it were true.
 
         teams_app_id = CONFIG.MENTION_BOT_TEAMS_APP_ID
 

@@ -1,3 +1,5 @@
+"""API endpoint to dump to console the access token for debugging purposes."""
+
 from http import HTTPStatus
 
 from aiohttp.web import Request, Response

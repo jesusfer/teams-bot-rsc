@@ -1,3 +1,5 @@
+"""API endpoint to add a bot to a chat."""
+
 from http import HTTPStatus
 
 from aiohttp.web import Request, Response
@@ -8,6 +10,7 @@ from utils.graph import Graph
 
 @ensure_qs("chat_id")
 async def add_bot(req: Request) -> Response:
+    """Add a bot to a chat."""
     chat_id = req.query.get("chat_id")
     print(f"\nAPI: Add bot in chat ID: {chat_id}")
 
