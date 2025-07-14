@@ -25,3 +25,6 @@ class DefaultConfig:
     MENTION_BOT_TEAMS_APP_ID = os.environ.get("MentionBotTeamsAppId")
     METION_BOT_ID = os.environ.get("MentionBotId")
     METION_BOT_NAME = os.environ.get("MentionBotName")
+
+    # The service URL for the bot to send proactive messages
+    SERVICE_URL = f"https://smba.trafficmanager.net/emea/{TENANT_ID}/"

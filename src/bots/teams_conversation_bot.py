@@ -43,7 +43,11 @@ class TeamsConversationBot(TeamsActivityHandler):
                 )
 
     async def on_message_activity(self, turn_context: TurnContext):
-        print(f"\nBOT: Received message: {turn_context.activity.text}")
+        print(
+            f"\nBOT: Received message {turn_context.activity.id}: {turn_context.activity.text}"
+        )
+        ref = TurnContext.get_conversation_reference(turn_context.activity)
+
         TurnContext.remove_recipient_mention(turn_context.activity)
         text = turn_context.activity.text.strip().lower()
 
@@ -75,8 +79,16 @@ class TeamsConversationBot(TeamsActivityHandler):
             await self._delete_card_activity(turn_context)
             return
 
-        await self._send_card(turn_context, False)
+        if "hi" == text:
+            await self._send_card(turn_context, False)
+
+        await self._echo(turn_context)
         return
+
+    async def _echo(self, turn_context: TurnContext):
+        text = turn_context.activity.text.strip().lower()
+        reply_activity = MessageFactory.text(f"Echo: {text}")
+        await turn_context.send_activity(reply_activity)
 
     async def _mention_adaptive_card_activity(self, turn_context: TurnContext):
         member: TeamsChannelAccount = None

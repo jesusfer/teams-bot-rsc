@@ -10,7 +10,12 @@ from botbuilder.core import (
     BotFrameworkAdapterSettings,
     TurnContext,
 )
-from botbuilder.schema import Activity, ActivityTypes
+from botbuilder.schema import (
+    Activity,
+    ActivityTypes,
+    ConversationReference,
+    ConversationAccount,
+)
 
 from config import DefaultConfig
 
@@ -78,4 +83,38 @@ async def messages(req: Request) -> Response:
     response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
     if response:
         return json_response(data=response.body, status=response.status)
+    return Response(status=HTTPStatus.OK)
+
+
+async def send_proactive(req: Request) -> Response:
+    """Send a proactive message to the user."""
+    chat_id = req.query.get("chat_id")
+    if not chat_id:
+        return Response(
+            status=HTTPStatus.BAD_REQUEST, text="Missing 'chat_id' query parameter"
+        )
+
+    print(f"\nAPI: Sending proactive message to chat ID: {chat_id}")
+
+    conv_reference = ConversationReference(
+        conversation=ConversationAccount(
+            id=chat_id,
+            is_group=True,
+            conversation_type="groupChat",
+            tenant_id=CONFIG.TENANT_ID,
+        ),
+        channel_id="msteams",
+        service_url=CONFIG.SERVICE_URL,
+    )
+
+    async def send_text(turn_context: TurnContext):
+        return await turn_context.send_activity(f"This is a proactive message")
+
+    # Send the activity
+    await ADAPTER.continue_conversation(
+        reference=conv_reference,
+        callback=send_text,
+        bot_id=APP_ID,
+    )
+
     return Response(status=HTTPStatus.OK)

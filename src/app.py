@@ -2,13 +2,14 @@ from aiohttp import web
 from botbuilder.core.integration import aiohttp_error_middleware
 
 from api.graph import *
-from bots.adapter import messages
+from bots.adapter import messages, send_proactive
 from config import DefaultConfig
 
 CONFIG = DefaultConfig()
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
+APP.router.add_get("/api/proactive", send_proactive)
 
 APP.router.add_get("/api/dump_token", dump_token)
 

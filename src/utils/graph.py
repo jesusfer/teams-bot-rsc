@@ -91,8 +91,7 @@ class Graph:
                 bot = app.teams_app_definition.bot
                 print(
                     f"Graph: App: {definition.display_name}, ID: {definition.id}, "
-                    f"Version: {definition.version}"
-                    "\n"
+                    f"Version: {definition.version} "
                     f"Bot ID: {bot.id}"
                 )
 

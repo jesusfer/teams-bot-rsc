@@ -130,7 +130,7 @@ async def get_notifications(req: Request) -> Response:
     else:
         # If the body does not contain 'value', log the entire body
         # This is useful for debugging unexpected notification formats
-        print(f"\nAPI: Received unexpected Graph notification format: {body}")
+        print(f"\nWebhook: Received unexpected Graph notification format: {body}")
 
     return Response(status=HTTPStatus.OK)
 
@@ -140,16 +140,16 @@ async def _process_notification(notification):
     """Process a single Graph notification."""
     # Here you can add logic to handle the notification
     # For example, you might want to queue it for processing
-    # print(f"\nAPI: Processing notification: {notification}")
+    # print(f"\nWebhook: Processing notification: {notification}")
     data = notification["resourceData"]
     if (
         notification["changeType"] == "created"
         and data.get("@odata.type") == "#Microsoft.Graph.chatMessage"
     ):
         # Assuming resourceData contains the relevant data for the notification
-        print(f"\nAPI: New message id: {data.get('id')}")
+        print(f"\nWebhook: New message id: {data.get('id')}")
     else:
-        print(f"\nAPI: Received Graph notification: {notification}")
+        print(f"\nWebhook: Received Graph notification: {notification}")
 
 
 @validate_token
@@ -161,7 +161,7 @@ async def get_lifecycle_notifications(req: Request) -> Response:
             status=HTTPStatus.BAD_REQUEST, text="No notification data provided"
         )
     # Process the notification data
-    print(f"\nAPI: Received Graph notification: {body}")
+    print(f"\nLF Webhook: Received Graph notification: {body}")
     # Process the notification data
     if "value" in body:
         for notification in body["value"]:
@@ -170,7 +170,9 @@ async def get_lifecycle_notifications(req: Request) -> Response:
     else:
         # If the body does not contain 'value', log the entire body
         # This is useful for debugging unexpected notification formats
-        print(f"\nAPI: Received unexpected Graph lifecycle notification format: {body}")
+        print(
+            f"\nLF Webhook: Received unexpected Graph lifecycle notification format: {body}"
+        )
     return Response(status=HTTPStatus.ACCEPTED)
 
 
@@ -179,7 +181,7 @@ async def _process_lifecycle_notification(notification):
     """Process a single Graph lifecycle notification."""
     # Here you can add logic to handle the lifecycle notification
     # For example, you might want to queue it for processing
-    print(f"\nAPI: Processing lifecycle notification: {notification}")
+    print(f"\nLF Webhook: Processing lifecycle notification: {notification}")
     if notification["lifecycleEvent"] == "reauthorizationRequired":
         print(
             f"Reauthorization required for notification: {notification['subscriptionId']}"
@@ -187,4 +189,4 @@ async def _process_lifecycle_notification(notification):
         graph = Graph()
         await graph.reauthorize_subscription(notification["subscriptionId"])
     else:
-        print(f"\nAPI: Received Graph lifecycle notification: {notification}")
+        print(f"\nLF Webhook: Received Graph lifecycle notification: {notification}")
