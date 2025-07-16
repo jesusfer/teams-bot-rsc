@@ -1,0 +1,25 @@
+http://localhost:3978/api/chat_info?chat_id=
+
+http://localhost:3978/api/proactive?chat_id=
+
+http://localhost:3978/api/subs/messages?chat_id=
+http://localhost:3978/api/subs/messages/new?chat_id=
+http://localhost:3978/api/subs/messages/delete?chat_id=
+
+http://localhost:3978/api/bots/add?chat_id=
+
+# Remove bots from chat
+
+https://graph.microsoft.com/v1.0/chats/chatid/installedApps?$expand=teamsAppDefinition($select=id,displayname)
+https://graph.microsoft.com/beta/chats/chatid/installedApps/MTk6MzM1ZDViZWU0NzEzNDRmNDliNGVmY2UzMjc0MmI0MWRAdGhyZWFkLnYyIyMyZTk4NWI1NS00ZmNkLTRmMzktOTRkMi05ZTYzMjA0NzlmNGU=
+
+
+To grant consent during app installation, the caller must have one of these permissions:
+TeamsAppInstallation.ReadWriteAndConsentForChat
+TeamsAppInstallation.ReadWriteAndConsentForChat.All
+TeamsAppInstallation.ManageSelectedForChat
+TeamsAppInstallation.ManageSelectedForChat.All
+TeamsAppInstallation.ReadWriteAndConsentSelfForChat
+TeamsAppInstallation.ReadWriteAndConsentSelfForChat.All
+
+

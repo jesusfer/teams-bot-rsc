@@ -117,7 +117,7 @@ class Graph:
                 if mention.mentioned.user:
                     print(f"Graph: Mentioned: {mention.mentioned.user.display_name}")
 
-    async def create_subscription(
+    async def subscription_create(
         self,
         resource: str,
         change_type: str,
@@ -141,6 +141,9 @@ class Graph:
             resource=resource,
             expiration_date_time=expiration.isoformat(),
             client_state=CONFIG.GRAPH_WEBHOOK_STATE,
+            include_resource_data=True,
+            encryption_certificate=CONFIG.NOTIFICATION_PUBLIC_KEY,
+            encryption_certificate_id=CONFIG.NOTIFICATION_KEY_ID,
         )
         created_subscription = await self.app_client.subscriptions.post(subscription)
         print(
@@ -148,7 +151,7 @@ class Graph:
         )
         return created_subscription
 
-    async def delete_subscription(self, resource: str) -> Subscription | None:
+    async def subscription_delete(self, resource: str) -> Subscription | None:
         subscriptions = await self.app_client.subscriptions.get()
         for subscription in subscriptions.value:
             if subscription.resource == resource:
@@ -159,7 +162,7 @@ class Graph:
                 return subscription
         print(f"Graph: No matching subscription found to delete.")
 
-    async def reauthorize_subscription(
+    async def subscription_reauthorize(
         self,
         subscription_id: str,
         expiration_in_seconds: int = CONFIG.GRAPH_NOTIFICATION_EXPIRATION,
@@ -190,11 +193,11 @@ class Graph:
     async def create_chat_messages_subscription(self, chat_id: str):
         resource = f"/chats/{chat_id}/messages"
         change_type = "created"
-        return await self.create_subscription(resource, change_type)
+        return await self.subscription_create(resource, change_type)
 
     async def delete_chat_messages_subscription(self, chat_id: str):
         resource = f"/chats/{chat_id}/messages"
-        return await self.delete_subscription(resource)
+        return await self.subscription_delete(resource)
 
     async def list_chat_messages_subscription(self, chat_id: str) -> None:
         resource = f"/chats/{chat_id}/messages"

@@ -19,6 +19,10 @@ switch ($botId) {
     }
 }
 
+
+$env:NotificationKeyId = "dcedeb67698004357a499..."
+$env:NotificationPublicKey = "MIIDFjCCAf6gAwIBAgIQE...""
+$env:NotificationPrivateKey = "MIIEvwIBADANBgkqhkiG9..."
 .\.venv\Scripts\Activate.ps1
 
 python .\src\app.py

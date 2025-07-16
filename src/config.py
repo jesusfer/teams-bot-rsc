@@ -28,3 +28,7 @@ class DefaultConfig:
 
     # The service URL for the bot to send proactive messages
     SERVICE_URL = f"https://smba.trafficmanager.net/emea/{TENANT_ID}/"
+
+    NOTIFICATION_KEY_ID = os.environ.get("NotificationKeyId")
+    NOTIFICATION_PUBLIC_KEY = os.environ.get("NotificationPublicKey")
+    NOTIFICATION_PRIVATE_KEY = os.environ.get("NotificationPrivateKey")

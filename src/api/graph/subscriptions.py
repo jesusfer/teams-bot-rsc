@@ -8,9 +8,13 @@ import urllib
 from http import HTTPStatus
 
 from aiohttp.web import Request, Response
+from kiota_serialization_json.json_parse_node_factory import JsonParseNodeFactory
+from msgraph.generated.models.message import Message
 
 from api.decorators import ensure_qs
 from config import DefaultConfig
+from utils import tokens
+from utils.crypto import _calculate_signature, _decrypt_data, _decrypt_symmetric_key
 from utils.graph import Graph
 
 CONFIG = DefaultConfig()
@@ -24,7 +28,7 @@ https://learn.microsoft.com/en-us/graph/change-notifications-with-resource-data
 """
 
 
-def validate_token(func):
+def handle_validation_request(func):
     """Decorator to validate the token when Graph sends a validation request."""
 
     @functools.wraps(func)
@@ -42,7 +46,7 @@ def validate_token(func):
     return wrapper
 
 
-def validate_notification(func):
+def check_client_state(func):
     """Decorator to validate the notification's client state to ensure it's coming from Graph."""
 
     @functools.wraps(func)
@@ -54,6 +58,34 @@ def validate_notification(func):
                 text="Invalid client state",
             )
         return await func(notification, *args, **kwargs)
+
+    return wrapper
+
+
+def check_validation_tokens(func):
+    """Decorator to validate the notification's validation tokens."""
+
+    @functools.wraps(func)
+    async def wrapper(request, *args, **kwargs):
+        body = await request.json()
+        if body.get("validationTokens"):
+            graph = Graph()
+            for token in body["validationTokens"]:
+                # print(f"Validation token: {token}")
+                try:
+                    valid = tokens.validate_token(token)
+                    if not valid:
+                        return Response(
+                            status=HTTPStatus.UNAUTHORIZED,
+                            text="Invalid validation token signature",
+                        )
+                except Exception as e:
+                    print(f"Error validating token: {e}")
+                    return Response(
+                        status=HTTPStatus.UNAUTHORIZED,
+                        text="Error validating token",
+                    )
+        return await func(request, *args, **kwargs)
 
     return wrapper
 
@@ -115,7 +147,8 @@ async def list_chat_messages_subscription(req: Request) -> Response:
         )
 
 
-@validate_token
+@handle_validation_request
+@check_validation_tokens
 async def get_notifications(req: Request) -> Response:
     """Handle Graph notifications."""
     body = await req.json()
@@ -135,7 +168,7 @@ async def get_notifications(req: Request) -> Response:
     return Response(status=HTTPStatus.OK)
 
 
-@validate_notification
+@check_client_state
 async def _process_notification(notification):
     """Process a single Graph notification."""
     # Here you can add logic to handle the notification
@@ -151,8 +184,32 @@ async def _process_notification(notification):
     else:
         print(f"\nWebhook: Received Graph notification: {notification}")
 
+    if notification["encryptedContent"]:
+        # TODO Probably want to extract this to a separate function
+        encrypted_content = notification["encryptedContent"]
+        dataKey = encrypted_content.get("dataKey")
+        data = encrypted_content.get("data")
+        dataSignature = encrypted_content.get("dataSignature")
+        # Decrypt the content using the symmetric key
+        symmetric_key = _decrypt_symmetric_key(dataKey)
+        # print(f"\nWebhook: key: {symmetric_key}")
+        signature = _calculate_signature(symmetric_key, data)
+        # print(f"\nWebhook: signature: {signature}")
+        if signature != dataSignature:
+            print(f"\nWebhook: Signature mismatch: {notification['id']}")
+            return
+        decrypted_data = _decrypt_data(symmetric_key, data)
+        # print(f"\nWebhook: Decrypted data: {decrypted_data}")
 
-@validate_token
+        # TODO Extract this to a separate function in the Graph module?
+        node = JsonParseNodeFactory().get_root_parse_node(
+            content_type="application/json", content=decrypted_data.encode("utf-8")
+        )
+        message = node.get_object_value(Message)
+        print(f"\nWebhook: Message body: {message.body.content}")
+
+
+@handle_validation_request
 async def get_lifecycle_notifications(req: Request) -> Response:
     """Handle Graph lifecycle notifications"""
     body = await req.json()
@@ -176,7 +233,7 @@ async def get_lifecycle_notifications(req: Request) -> Response:
     return Response(status=HTTPStatus.ACCEPTED)
 
 
-@validate_notification
+@check_client_state
 async def _process_lifecycle_notification(notification):
     """Process a single Graph lifecycle notification."""
     # Here you can add logic to handle the lifecycle notification
@@ -187,6 +244,6 @@ async def _process_lifecycle_notification(notification):
             f"Reauthorization required for notification: {notification['subscriptionId']}"
         )
         graph = Graph()
-        await graph.reauthorize_subscription(notification["subscriptionId"])
+        await graph.subscription_reauthorize(notification["subscriptionId"])
     else:
         print(f"\nLF Webhook: Received Graph lifecycle notification: {notification}")
